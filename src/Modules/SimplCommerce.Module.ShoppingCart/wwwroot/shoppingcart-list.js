@@ -9,8 +9,13 @@
                 vm.cart = {};
 
                 function cartDataCallback(result) {
-                    vm.cart = result.data;
-                    $('.cart-badge .badge').text(vm.cart.items.length);
+                    if (result.data.error) {
+                        toastr.error(result.data.message);
+                    }
+                    else {
+                        vm.cart = result.data;
+                        $('.cart-badge .badge').text(vm.cart.items.length);
+                    }
                 }
 
                 function getShoppingCartItems() {
@@ -22,16 +27,14 @@
                 };
 
                 vm.increaseQuantity = function increaseQuantity(item) {
-                    item.quantity += 1;
-                    shoppingCartService.updateQuantity(item.id, item.quantity).then(cartDataCallback);
+                    shoppingCartService.updateQuantity(item.id, item.quantity + 1 ).then(cartDataCallback);
                 };
 
                 vm.decreaseQuantity = function decreaseQuantity(item) {
                     if (item.quantity <= 1) {
                         return;
                     }
-                    item.quantity -= 1;
-                    shoppingCartService.updateQuantity(item.id, item.quantity).then(cartDataCallback);
+                    shoppingCartService.updateQuantity(item.id, item.quantity - 1).then(cartDataCallback);
                 };
 
                 vm.applyCoupon = function applyCoupon() {
@@ -48,6 +51,13 @@
                 vm.saveOrderNote = function saveOrderNote() {
                     shoppingCartService.saveOrderNote(vm.cart.orderNote).then(function () {
                         toastr.success('Order note has been saved');
+                    });
+                };
+
+                vm.unlock = function unlock() {
+                    shoppingCartService.unlock().then(function () {
+                        toastr.success('Cart unlocked');
+                        vm.cart.lockedOnCheckout = false;
                     });
                 };
 
